@@ -1,0 +1,51 @@
+# Orbbec RGBD camera primitive — multi-model wrapper over the vendored
+# OrbbecSDK_ROS2 driver (src/OrbbecSDK_ROS2).
+#
+# The launch file is config-selected (`launch_file`, default
+# dabai_dcw.launch.py) so one package drives any Orbbec model the vendored
+# driver supports — validated on Dabai DCW and Gemini 336L (330-series).
+# Stream topics are atlas-routed under the generic primitive/camera/*
+# contracts; consumers (detection, grasp, scene, vision skills) resolve
+# topic names through atlas instead of hardcoding /camera/color/image_raw.
+#
+# Lifecycle (Robonix developer guide §5):
+#   CMD_INIT     -> on_init: light cfg validation, derive topic names.
+#   CMD_ACTIVATE -> on_activate: `ros2 launch orbbec_camera <launch_file>`,
+#                   wait for the first RGB frame (sentinel), atlas-declare
+#                   rgb + depth + camera_info ROS 2 topics.
+#   CMD_DEACTIVATE / CMD_SHUTDOWN -> kill orbbec subprocess (idempotent).
+#
+# camera_info is defined LOCALLY at
+# capabilities/primitive/camera/camera_info.v1.toml because the robonix
+# global tree ships rgb/depth/driver but not camera_info; codegen + atlas
+# merge package-level contracts automatically.
+#
+# Aspirational contracts (extrinsics, snapshot, depth_snapshot) are
+# intentionally NOT declared — manifest entries must correspond to real
+# declare_ros2_*/@cap.mcp handlers.
+#
+# Config keys are documented in config.spec.
+manifestVersion: 1
+
+package:
+  name: robonix.primitive.orbbec.camera
+  version: 0.1.0
+  description: >-
+    Orbbec RGBD camera primitive — multi-model wrapper over the vendored
+    OrbbecSDK_ROS2 driver with config-selected launch file (Dabai DCW,
+    Gemini 330-series), declaring rgb + depth + camera_info.
+  license: Apache-2.0
+  tags: [primitive, camera, orbbec, rgbd, ros2]
+  maintainers:
+    - Felix <xi.lifeng@qq.com>
+    - lhw2002426 <lhw2002426@users.noreply.github.com>
+
+build: bash scripts/build.sh
+start: bash scripts/start.sh
+
+capabilities:
+  - name: robonix/primitive/camera/driver
+  - name: robonix/primitive/camera/rgb
+  - name: robonix/primitive/camera/depth
+  - name: robonix/primitive/camera/camera_info
+    path: capabilities/primitive/camera/camera_info.v1.toml

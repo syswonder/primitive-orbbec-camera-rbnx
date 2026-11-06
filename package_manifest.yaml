@@ -43,9 +43,16 @@ package:
 build: bash scripts/build.sh
 start: bash scripts/start.sh
 
+# Transport per capability, matching each contract's [mode]: the driver is an
+# rpc lifecycle interface, the other three are topic_out streams. Without it
+# rbnx boot warns and no consumer can tell how to reach the data.
 capabilities:
   - name: robonix/primitive/camera/driver
+    transport: grpc
   - name: robonix/primitive/camera/rgb
+    transport: ros2
   - name: robonix/primitive/camera/depth
+    transport: ros2
   - name: robonix/primitive/camera/camera_info
+    transport: ros2
     path: capabilities/primitive/camera/camera_info.v1.toml

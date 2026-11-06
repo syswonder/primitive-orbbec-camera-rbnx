@@ -275,7 +275,10 @@ void OBCameraNodeDriver::rebootDeviceCallback(
 
 std::shared_ptr<ob::Device> OBCameraNodeDriver::selectDevice(
     const std::shared_ptr<ob::DeviceList> &list) {
-  if (device_num_ == 1) {
+  // A pinned serial must always win. The old `device_num_ == 1` test short-cut
+  // every single-device instance to list->getDevice(0), so two identical units
+  // both opened device 0 and the second failed with uvc_open res-6.
+  if (device_num_ == 1 && serial_number_.empty()) {
     RCLCPP_INFO_STREAM(logger_, "Connecting to the default device");
     return list->getDevice(0);
   }
